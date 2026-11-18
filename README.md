@@ -51,7 +51,7 @@ SAGA-Net/
 ## Installation
 
 ```bash
-git clone https://github.com/<account>/SAGA-Net.git
+git clone https://github.com/Venonary/SAGA-Net.git
 cd SAGA-Net
 # install PyTorch 2.5.1 for your platform from https://pytorch.org (CUDA 12.1 build used in the paper), then:
 pip install -r requirements.txt
