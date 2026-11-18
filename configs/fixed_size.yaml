@@ -19,7 +19,7 @@ model:
   use_cross_gate: true
 
 train:
-  seed: 20260727          # the paper used seeds 20260727, 20260728, 20260729
+  seed: 20260727          # our experiments used seeds 20260727, 20260728, 20260729
   epochs: 50
   batch_size: 8
   val_batch_size: 8

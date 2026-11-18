@@ -1,10 +1,7 @@
 """SAGA-Net: spectral amplitude-gradient aggregation network.
 
-Reference implementation of the network described in Section 2.5 of
-
-    "Amplitude-gradient spatial-spectral network with cross-speed global
-    aggregation for mold-severity grading of maize kernels in pushbroom
-    hyperspectral imaging" (Frontiers in Plant Science).
+Reference implementation of SAGA-Net for mold-severity grading of maize
+kernels in pushbroom hyperspectral imaging.
 
 The code reproduces, layer by layer and in the same construction order (so a
 given random seed yields the same initial weights), the archived model that
@@ -122,14 +119,14 @@ class SAGANet(nn.Module):
     """Spectral amplitude-gradient aggregation network (SAGA-Net).
 
     Args:
-        num_bands: number of measured bands C (462 in the paper).
+        num_bands: number of measured bands C (462 in our experiments).
         num_classes: number of grades (3).
         num_virtual_bands: K, virtual bands per stream (40).
         width: required cross-track width W (128). The along-track height H
             may vary (H >= 10); records of 128, 64, 26 and 13 rows are accepted.
         use_gradient_stream: False gives the single-stream (amplitude only)
-            ablation of Section 2.6.1, which also removes cross-stream gating.
-        use_cross_gate: enable cross-stream gating (paper model: True).
+            ablation, which also removes cross-stream gating.
+        use_cross_gate: enable cross-stream gating (default model: True).
     """
 
     def __init__(
@@ -226,7 +223,7 @@ class SAGANet(nn.Module):
 
 
 def build_saga_net(**overrides) -> SAGANet:
-    """Build the paper configuration (C=462, K=40, W=128, 3 classes)."""
+    """Build the default configuration (C=462, K=40, W=128, 3 classes)."""
     config = dict(num_bands=462, num_classes=3, num_virtual_bands=40, width=128,
                   use_gradient_stream=True, use_cross_gate=True)
     config.update(overrides)

@@ -25,7 +25,7 @@ Each ``.npy`` file holds one kernel record as a float array of shape
 ``462 x H x 128`` (bands x along-track rows x cross-track columns) with
 radiometrically corrected reflectance and voxels outside the kernel mask set
 to zero. Arrays stored as ``H x 128 x 462`` are transposed automatically.
-No normalization is applied (none was used in the paper).
+No normalization is applied (none was used in our experiments).
 """
 
 from __future__ import annotations

@@ -21,7 +21,7 @@ model:
   use_cross_gate: true
 
 train:
-  seed: 314159            # the paper used seeds 314159, 271828, 161803
+  seed: 314159            # our experiments used seeds 314159, 271828, 161803
   epochs: 80              # maximum
   batch_size: 2
   val_batch_size: 2
@@ -33,7 +33,7 @@ train:
   scheduler_t_max: 80     # cosine annealing, stepped once per epoch
   amp: true
   flip_probability: 0.5   # independent column / row flips, no axis exchange
-  # Uniform row-drop ("+ row-drop" variant, Section 2.7); enable with --row-drop.
+  # Uniform row-drop ("+ row-drop" variant); enable with --row-drop.
   row_drop: false
   row_drop_keep_probability: 0.5
   # Checkpoint selection: mean FP32 cross-entropy over full-height 1x validation

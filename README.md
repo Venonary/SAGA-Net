@@ -2,14 +2,15 @@
 
 **Spectral amplitude–gradient aggregation network for mold-severity grading of maize kernels in variable-speed pushbroom hyperspectral imaging**
 
-This repository contains the reference PyTorch implementation of SAGA-Net, described in the paper
+This repository contains the reference PyTorch implementation of SAGA-Net.
 
-> **Amplitude–gradient spatial–spectral network with cross-speed global aggregation for mold-severity grading of maize kernels in pushbroom hyperspectral imaging**
-> Zhenyu Han, Yongli Zhang, Shaozhong Song, Xuan Liu, Tailin Han. *Frontiers in Plant Science* (2026).
-
-It includes the model definition, the augmentation used in the paper (including the uniform row-drop augmentation), training scripts and configurations for the fixed-size and multi-speed experiments, and an inference script that accepts kernel records of any scan height. The model code reproduces the archived implementation that produced the reported results: with the same random seed it creates the same initial weights and produces the same outputs.
+It includes the model definition, the augmentation used in our experiments (including the uniform row-drop augmentation), training scripts and configurations for the fixed-size and multi-speed experiments, and an inference script that accepts kernel records of any scan height. The model code reproduces the archived implementation that produced our reported results: with the same random seed it creates the same initial weights and produces the same outputs.
 
 ## Architecture
+
+![SAGA-Net architecture](docs/figures/architecture.png)
+
+*Architecture of SAGA-Net. `H` is the number of scan rows of the input record and `H'` is the spatial height after max pooling; the batch dimension is omitted.*
 
 Input: one kernel record `X ∈ R^{462×H×128}` (bands × along-track scan rows × cross-track columns). Output: logits for three mold grades.
 
@@ -31,6 +32,18 @@ Input: one kernel record `X ∈ R^{462×H×128}` (bands × along-track scan rows
 
 Total parameters: **865,155 (865.2K)**, of which 240 are fixed aggregation parameters. The single-stream (amplitude-only) ablation (`use_gradient_stream: false`) has 840,875 parameters. Any height `H ≥ 10` is accepted; the width must be 128.
 
+### Why the record height changes
+
+![Effect of conveyor speed on spatial sampling](docs/figures/speed_sampling.png)
+
+*Effect of conveyor speed on spatial sampling. (A) Row sampling footprints of the same kernel at four speeds; the kernel is drawn 12 mm long, to scale along the scan direction. Blue marks the footprint of each row (the field-of-view width δ, taken as one pixel of 0.170 mm, plus the motion distance `L_e` during exposure), and light yellow marks kernel areas that are not sampled. (B) Measured records of the same kernel at the four speeds, drawn at a common pixel scale; sizes are given as bands × rows × columns.*
+
+## Results across conveyor speeds
+
+<p align="center"><img src="docs/figures/multispeed_macro_f1.png" alt="Test macro-F1 at four conveyor speeds" width="520"></p>
+
+*Test macro-F1 of each method at the four speeds in the multi-speed experiment (55 test kernels; models trained on 1× records only). SAGA-Net and SSRN (solid lines, unaugmented; dashed lines, trained with uniform row-drop augmentation on 1× records only) are means over three training seeds, with error bars showing ±1 sample standard deviation; the mean-spectrum linear SVM, SVM + DS/PDS, and shrinkage LDA are single fits. DS and PDS gave identical results at every speed and are shown as one curve.*
+
 ## Repository layout
 
 ```
@@ -43,6 +56,7 @@ SAGA-Net/
 ├── configs/
 │   ├── fixed_size.yaml
 │   └── multi_speed.yaml
+├── docs/figures/          # figures shown in this README
 ├── tests/smoke_test.py    # parameter-count and forward-pass checks (CPU, random data)
 ├── requirements.txt
 └── LICENSE
@@ -53,16 +67,16 @@ SAGA-Net/
 ```bash
 git clone https://github.com/Venonary/SAGA-Net.git
 cd SAGA-Net
-# install PyTorch 2.5.1 for your platform from https://pytorch.org (CUDA 12.1 build used in the paper), then:
+# install PyTorch 2.5.1 for your platform from https://pytorch.org (CUDA 12.1 build used in our experiments), then:
 pip install -r requirements.txt
 python tests/smoke_test.py
 ```
 
 ## Data format
 
-The hyperspectral dataset used in the paper is **not publicly available** (see [Data availability](#data-availability)). To use the code with your own data, provide:
+The hyperspectral dataset is not included in this repository. To use the code with your own data, provide:
 
-* one `.npy` file per kernel record, holding a float array of shape `462 × H × 128` (bands × along-track rows × cross-track columns; `H × 128 × 462` is also accepted and transposed). Values are radiometrically corrected reflectance `R = (I_S − I_D)/(I_W − I_D)`, and all voxels outside the kernel mask are set to **zero**. No further preprocessing or normalization is applied. In the paper, records are 128 rows at the baseline speed (1×) and 64, 26 and 13 rows at 2×, 5× and 10×;
+* one `.npy` file per kernel record, holding a float array of shape `462 × H × 128` (bands × along-track rows × cross-track columns; `H × 128 × 462` is also accepted and transposed). Values are radiometrically corrected reflectance `R = (I_S − I_D)/(I_W − I_D)`, and all voxels outside the kernel mask are set to **zero**. No further preprocessing or normalization is applied. In our experiments, records are 128 rows at the baseline speed (1×) and 64, 26 and 13 rows at 2×, 5× and 10×;
 * a `labels.csv` file with the columns `path,label,split` (and optionally any other columns, e.g. `kernel_id,speed`), where `path` is relative to the CSV file, `label` is `0` = sound, `1` = slight, `2` = severe, and `split` is `train`, `val` or `test`:
 
 ```csv
@@ -83,7 +97,7 @@ Split by kernel so that all records of one kernel are in the same split.
 python train.py --config configs/fixed_size.yaml --csv data/labels.csv --seed 20260727
 ```
 
-Adam (learning rate 3×10⁻³, weight decay 10⁻⁶), batch size 8, StepLR (×0.1 every 10 epochs), 50 epochs, automatic mixed precision (AMP). Training augmentation: random flipping, rotation, local erasing and random resized cropping. The checkpoint with the minimum validation cross-entropy is saved to `runs/fixed_size/seed_<seed>/best.pt`. The paper used seeds 20260727, 20260728 and 20260729.
+Adam (learning rate 3×10⁻³, weight decay 10⁻⁶), batch size 8, StepLR (×0.1 every 10 epochs), 50 epochs, automatic mixed precision (AMP). Training augmentation: random flipping, rotation, local erasing and random resized cropping. The checkpoint with the minimum validation cross-entropy is saved to `runs/fixed_size/seed_<seed>/best.pt`. Our experiments used seeds 20260727, 20260728 and 20260729.
 
 ### Multi-speed experiment (train on 1× only, test at every speed)
 
@@ -94,7 +108,7 @@ python train.py --config configs/multi_speed.yaml --csv data/labels.csv --seed 3
 python train.py --config configs/multi_speed.yaml --csv data/labels.csv --seed 314159 --row-drop --output runs/multi_speed_rowdrop
 ```
 
-Only the 1× (`H = 128`) records of the training kernels are used (`train_filters: {speed: ["1x"]}`; this requires a `speed` column). AdamW (learning rate 3×10⁻⁴, weight decay 10⁻⁴), batch size 2 with 4-step gradient accumulation, at most 80 epochs, cosine annealing, AMP, random column/row flipping with probability 0.5. The checkpoint is chosen by the **validation selection loss**: the mean FP32 cross-entropy over the full-height 1× validation records and their views row-subsampled at nominal factors 2, 5 and 10. Training stops early after 15 epochs without improvement. No higher-speed record is used for training or checkpoint selection. The paper used seeds 314159, 271828 and 161803.
+Only the 1× (`H = 128`) records of the training kernels are used (`train_filters: {speed: ["1x"]}`; this requires a `speed` column). AdamW (learning rate 3×10⁻⁴, weight decay 10⁻⁴), batch size 2 with 4-step gradient accumulation, at most 80 epochs, cosine annealing, AMP, random column/row flipping with probability 0.5. The checkpoint is chosen by the **validation selection loss**: the mean FP32 cross-entropy over the full-height 1× validation records and their views row-subsampled at nominal factors 2, 5 and 10. Training stops early after 15 epochs without improvement. No higher-speed record is used for training or checkpoint selection. Our experiments used seeds 314159, 271828 and 161803.
 
 **Row-drop augmentation** (`--row-drop`, `augment.RowDrop`): for each mini-batch, the full height is kept with probability 0.5. Otherwise one stride `r` is drawn uniformly from {2, …, 10}, and each kernel keeps every `r`-th scan row from its own random start in {0, …, r−1}. This gives `462 × ⌈128/r⌉ × 128` cubes; a kernel whose start leaves one row fewer is padded with one zero (background) row at the bottom.
 
@@ -118,26 +132,6 @@ model.load_state_dict(torch.load("best.pt", map_location="cpu")["model_state"])
 cube = torch.rand(1, 462, 26, 128)          # e.g. a 5x record
 with torch.no_grad():
     grade = model(cube).argmax(1).item()   # 0 sound, 1 slight, 2 severe
-```
-
-## Data availability
-
-The hyperspectral dataset of maize kernels used in the paper is not publicly available because it is subject to the data-management requirements of the funded research projects. Requests to access the dataset should be directed to the corresponding author, Tailin Han (hantl@cust.edu.cn).
-
-## Citation
-
-If you use this code, please cite:
-
-```bibtex
-@article{han2026saganet,
-  title   = {Amplitude--gradient spatial--spectral network with cross-speed global aggregation for mold-severity grading of maize kernels in pushbroom hyperspectral imaging},
-  author  = {Han, Zhenyu and Zhang, Yongli and Song, Shaozhong and Liu, Xuan and Han, Tailin},
-  journal = {Frontiers in Plant Science},
-  year    = {2026},
-  volume  = {TBD},
-  pages   = {TBD},
-  doi     = {TBD}
-}
 ```
 
 ## License

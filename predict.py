@@ -36,7 +36,7 @@ def load_model(checkpoint: str | Path, device: torch.device) -> torch.nn.Module:
     model_config = config.get("model", {}) if isinstance(config, dict) else {}
     model_config = model_config if isinstance(model_config, dict) else {}
     # Only keys understood by build_saga_net are used (checkpoints written by
-    # other code fall back to the paper configuration).
+    # other code fall back to the default configuration).
     model_config = {k: v for k, v in model_config.items() if k in MODEL_KEYS}
     model = build_saga_net(**model_config)
     model.load_state_dict(remap_archived_state_dict(state), strict=True)

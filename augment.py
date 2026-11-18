@@ -1,14 +1,14 @@
 """Data augmentation and row-subsampling utilities for SAGA-Net.
 
-* Fixed-size experiment (Section 2.7): random flipping, rotation, local
+* Fixed-size experiment: random flipping, rotation, local
   erasing ("cut") and random resized cropping, applied per sample to
   C x 128 x 128 cubes. Ported from the archived training code, including its
   probabilities and random-number sources (NumPy for flip/rotate/cut, PyTorch
   for the resized crop).
 * Multi-speed experiment: axis-preserving random flips (p = 0.5 per axis) and
-  the optional uniform row-drop augmentation (Section 2.7, "+ row-drop").
+  the optional uniform row-drop augmentation ("+ row-drop").
 * ``nominal_subsample`` builds the deterministic row-subsampled validation
-  views used by the multi-speed checkpoint-selection loss (Section 2.6.2).
+  views used by the multi-speed checkpoint-selection loss.
 """
 
 from __future__ import annotations

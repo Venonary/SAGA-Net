@@ -1,9 +1,9 @@
-"""Train SAGA-Net with the fixed-size or the multi-speed protocol of the paper.
+"""Train SAGA-Net with the fixed-size or the multi-speed training protocol.
 
     python train.py --config configs/fixed_size.yaml  --csv /path/to/labels.csv
     python train.py --config configs/multi_speed.yaml --csv /path/to/labels.csv [--row-drop]
 
-The two protocols reproduce the archived training loops (Sections 2.6-2.7):
+The two protocols reproduce the archived training loops:
 
 fixed_size
     Adam (lr 3e-3, weight decay 1e-6), batch 8, StepLR x0.1 every 10 epochs,
