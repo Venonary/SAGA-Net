@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Data, outputs and checkpoints (never commit)
+data/
+runs/
+*.npy
+*.npz
+*.pt
+*.pth
+*.ckpt
+*.log
+predictions*.csv

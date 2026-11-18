@@ -1,0 +1,42 @@
+# Fixed-size experiment (Sections 2.6.1 and 2.7): 462 x 128 x 128 inputs.
+protocol: fixed_size
+output_dir: runs/fixed_size
+
+data:
+  csv: null               # path to labels.csv (or pass --csv)
+  train_split: train
+  val_split: val
+  train_filters: {}       # e.g. {speed: ["1x"]}
+  val_filters: {}
+  height: 128             # all fixed-size records are 128 x 128
+
+model:
+  num_bands: 462
+  num_classes: 3
+  num_virtual_bands: 40
+  width: 128
+  use_gradient_stream: true   # false = single-stream (amplitude-only) ablation
+  use_cross_gate: true
+
+train:
+  seed: 20260727          # the paper used seeds 20260727, 20260728, 20260729
+  epochs: 50
+  batch_size: 8
+  val_batch_size: 8
+  num_workers: 2
+  drop_last: true
+  optimizer: adam
+  lr: 0.003
+  weight_decay: 1.0e-6
+  scheduler:
+    name: step
+    step_size: 10
+    gamma: 0.1
+  amp: true               # FP16 autocast + GradScaler (CUDA only)
+  validation_amp: true    # validation loss for checkpoint selection computed under AMP, as archived
+  augmentation: true      # flip (p=0.5), rotate (p=0.5), local erasing (p=0.5), resized crop (p=0.1)
+  # Archived rule: stop after N consecutive epochs whose validation loss does not
+  # decrease relative to the previous epoch. It never triggered in the reported
+  # runs (all 50 epochs completed). Set to null to always run all epochs.
+  early_stopping_patience: 10
+  deterministic: false    # archived fixed-size runs used cudnn.benchmark = true

@@ -1,0 +1,44 @@
+# Multi-speed experiment (Sections 2.6.2 and 2.7): train on 1x records only,
+# select checkpoints on 1x validation records, test at native heights
+# (H = 128, 64, 26, 13) with predict.py.
+protocol: multi_speed
+output_dir: runs/multi_speed
+
+data:
+  csv: null               # path to labels.csv (or pass --csv)
+  train_split: train
+  val_split: val
+  train_filters: {speed: ["1x"]}   # requires a 'speed' column; remove if the CSV lists only 1x records
+  val_filters: {speed: ["1x"]}
+  height: 128
+
+model:
+  num_bands: 462
+  num_classes: 3
+  num_virtual_bands: 40
+  width: 128
+  use_gradient_stream: true
+  use_cross_gate: true
+
+train:
+  seed: 314159            # the paper used seeds 314159, 271828, 161803
+  epochs: 80              # maximum
+  batch_size: 2
+  val_batch_size: 2
+  grad_accumulation: 4    # optimizer step every 4 mini-batches (and at the end of each epoch)
+  num_workers: 0
+  optimizer: adamw
+  lr: 0.0003
+  weight_decay: 1.0e-4
+  scheduler_t_max: 80     # cosine annealing, stepped once per epoch
+  amp: true
+  flip_probability: 0.5   # independent column / row flips, no axis exchange
+  # Uniform row-drop ("+ row-drop" variant, Section 2.7); enable with --row-drop.
+  row_drop: false
+  row_drop_keep_probability: 0.5
+  # Checkpoint selection: mean FP32 cross-entropy over full-height 1x validation
+  # records and row-subsampled views at these nominal factors.
+  selection_factors: [2, 5, 10]
+  selection_phase_fraction: 0.5
+  patience: 15            # epochs without improvement of the best selection loss
+  deterministic: true
