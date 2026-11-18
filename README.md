@@ -38,12 +38,6 @@ Total parameters: **865,155 (865.2K)**, of which 240 are fixed aggregation param
 
 *Effect of conveyor speed on spatial sampling. (A) Row sampling footprints of the same kernel at four speeds; the kernel is drawn 12 mm long, to scale along the scan direction. Blue marks the footprint of each row (the field-of-view width δ, taken as one pixel of 0.170 mm, plus the motion distance `L_e` during exposure), and light yellow marks kernel areas that are not sampled. (B) Measured records of the same kernel at the four speeds, drawn at a common pixel scale; sizes are given as bands × rows × columns.*
 
-## Results across conveyor speeds
-
-<p align="center"><img src="docs/figures/multispeed_macro_f1.png" alt="Test macro-F1 at four conveyor speeds" width="520"></p>
-
-*Test macro-F1 of each method at the four speeds in the multi-speed experiment (55 test kernels; models trained on 1× records only). SAGA-Net and SSRN (solid lines, unaugmented; dashed lines, trained with uniform row-drop augmentation on 1× records only) are means over three training seeds, with error bars showing ±1 sample standard deviation; the mean-spectrum linear SVM, SVM + DS/PDS, and shrinkage LDA are single fits. DS and PDS gave identical results at every speed and are shown as one curve.*
-
 ## Repository layout
 
 ```
